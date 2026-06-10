@@ -3,54 +3,505 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Readiness Index</title>
+<title>Global AI Readiness Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 24px; color: #222; }
-  h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
-  p.sub { font-size: 13px; color: #666; margin-bottom: 16px; }
-  .legend { display: flex; gap: 16px; margin-bottom: 12px; font-size: 12px; }
-  .legend span { display: flex; align-items: center; gap: 5px; }
-  .dot { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
-  .wrap { overflow-x: auto; background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead th {
-    padding: 10px 8px; text-align: center; font-weight: 600; font-size: 11px;
-    background: #1F4E79; color: #fff; position: sticky; top: 0; white-space: nowrap;
+  :root {
+    --bg: #080e1a;
+    --bg2: #0d1628;
+    --bg3: #111e35;
+    --panel: #0f1c30;
+    --border: rgba(93,202,165,0.12);
+    --border2: rgba(31,78,121,0.4);
+    --navy: #1F4E79;
+    --navy-light: #2563a0;
+    --green: #5DCAA5;
+    --amber: #FAC775;
+    --red: #F09595;
+    --text: #e8eef7;
+    --muted: #6b85a8;
+    --dim: #3a5070;
+    --glow-green: rgba(93,202,165,0.25);
   }
-  thead th:nth-child(2) { text-align: left; min-width: 160px; }
-  thead th:first-child { min-width: 48px; }
-  tbody tr:nth-child(even) { background: #f9f9f9; }
-  tbody tr:hover { background: #eef4fb; }
-  tbody td { padding: 5px 8px; border-bottom: 1px solid #eee; text-align: center; }
-  tbody td:nth-child(2) { text-align: left; font-weight: 500; }
-  tbody td:first-child { color: #888; font-size: 12px; }
-  .h { background: #5DCAA5; color: #04342C; border-radius: 3px; padding: 1px 5px; display: inline-block; min-width: 28px; }
-  .m { background: #FAC775; color: #412402; border-radius: 3px; padding: 1px 5px; display: inline-block; min-width: 28px; }
-  .l { background: #F09595; color: #501313; border-radius: 3px; padding: 1px 5px; display: inline-block; min-width: 28px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(31,78,121,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31,78,121,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 36px 48px 28px;
+    border-bottom: 1px solid var(--border2);
+    background: linear-gradient(180deg, rgba(31,78,121,0.15) 0%, transparent 100%);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0.4;
+  }
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    background: linear-gradient(135deg, #e8eef7 30%, var(--green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    letter-spacing: 0.06em;
+    line-height: 1.8;
+  }
+  .header-meta .count {
+    display: block;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--green);
+    letter-spacing: -0.02em;
+  }
+  .legend-bar {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 14px 48px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 5;
+  }
+  .leg { display: flex; align-items: center; gap: 7px; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .tabs-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 48px 48px;
+    position: relative;
+    z-index: 5;
+  }
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border2);
+    margin-bottom: 36px;
+  }
+  .tab-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 12px 28px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 1px;
+    background: var(--green);
+    box-shadow: 0 0 12px var(--green);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeUp 0.3s ease forwards; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── TAB 1 ── */
+  .profile-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .selector-panel {
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 24px;
+    position: sticky;
+    top: 24px;
+  }
+  .panel-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    padding: 11px 14px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b85a8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    transition: border-color 0.2s;
+  }
+  select:focus { border-color: var(--green); }
+  select option { background: #1a2840; }
+  .rank-display {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--bg3);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .rank-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .rank-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 52px;
+    font-weight: 900;
+    color: var(--green);
+    line-height: 1;
+    margin: 6px 0 4px;
+    text-shadow: 0 0 40px rgba(93,202,165,0.4);
+  }
+  .rank-country {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .chart-area {
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 28px;
+  }
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .radar-wrap {
+    width: 100%;
+    max-width: 460px;
+    margin: 0 auto;
+    aspect-ratio: 1;
+  }
+  .scores-grid {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .score-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    opacity: 0;
+    animation: fadeUp 0.4s ease forwards;
+    transition: border-color 0.2s;
+  }
+  .score-card:hover { border-color: var(--border2); }
+  .score-dim {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .score-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .score-val.h { color: var(--green); }
+  .score-val.m { color: var(--amber); }
+  .score-val.l { color: var(--red); }
+  .score-bar-track {
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
+  }
+  .score-bar-fill.h { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .score-bar-fill.m { background: var(--amber); }
+  .score-bar-fill.l { background: var(--red); }
+
+  /* ── TAB 2 ── */
+  .compare-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr 260px;
+    gap: 20px;
+    align-items: start;
+  }
+  .compare-side {
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .compare-side .country-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 10px 0 16px;
+    min-height: 28px;
+    line-height: 1.2;
+  }
+  .compare-side.left .country-name { color: #7DD3FC; }
+  .compare-side.right .country-name { color: #FCA5A5; }
+  .cmp-score-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+  .cmp-score-row:last-child { border-bottom: none; }
+  .cmp-dim {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    flex: 1;
+  }
+  .cmp-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 28px;
+    text-align: right;
+  }
+  .cmp-val.h { color: var(--green); }
+  .cmp-val.m { color: var(--amber); }
+  .cmp-val.l { color: var(--red); }
+  .cmp-diff {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    text-align: right;
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+    min-width: 28px;
+  }
+  .diff-win { color: var(--green); }
+  .diff-lose { color: var(--red); }
+  .diff-tie { color: var(--dim); }
+  .compare-center {
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 28px;
+  }
+  .compare-center .chart-title { text-align: center; margin-bottom: 6px; }
+  .compare-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+  }
+  .cmp-leg { display: flex; align-items: center; gap: 7px; letter-spacing: 0.06em; }
+  .cmp-leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .compare-radar-wrap {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    aspect-ratio: 1;
+  }
+  .placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 280px;
+    color: var(--dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px dashed var(--dim);
+    border-radius: 8px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .placeholder-icon { font-size: 32px; opacity: 0.3; }
+
+  @media (max-width: 1100px) {
+    .profile-layout { grid-template-columns: 1fr; }
+    .selector-panel { position: static; }
+    .compare-layout { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    header { padding: 20px; }
+    .legend-bar { padding: 12px 20px; flex-wrap: wrap; gap: 14px; }
+    .tabs-wrapper { padding: 20px 20px 40px; }
+    .scores-grid { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
-<h1>AI Readiness Index</h1>
-<p class="sub">94 countries ranked across 9 dimensions of AI readiness</p>
-<div class="legend">
-  <span><span class="dot" style="background:#5DCAA5"></span> 60–100 (High)</span>
-  <span><span class="dot" style="background:#FAC775"></span> 30–59 (Mid)</span>
-  <span><span class="dot" style="background:#F09595"></span> 0–29 (Low)</span>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="header-title">Global AI Readiness Index</div>
+    </div>
+    <div class="header-meta">
+      <span class="count">94</span>
+      <span>Countries Assessed</span>
+      <span>9 Dimensions</span>
+    </div>
+  </div>
+</header>
+
+<div class="legend-bar">
+  <span style="color:#5a7a9c;font-size:10px;letter-spacing:0.05em;">SCORE BANDS</span>
+  <div class="leg"><span class="leg-dot" style="background:var(--green)"></span> 60–100 HIGH</div>
+  <div class="leg"><span class="leg-dot" style="background:var(--amber)"></span> 30–59 MID</div>
+  <div class="leg"><span class="leg-dot" style="background:var(--red)"></span> 0–29 LOW</div>
 </div>
-<div class="wrap">
-<table>
-<thead>
-<tr>
-  <th>#</th><th>Country</th><th>Talent</th><th>Infrastructure</th><th>Op. Environment</th>
-  <th>Research</th><th>Development</th><th>Gov. Strategy</th><th>Commercial</th><th>Scale</th><th>Intensity</th>
-</tr>
-</thead>
-<tbody id="tbl"></tbody>
-</table>
+
+<div class="tabs-wrapper">
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('profile',this)">Country Profile</button>
+    <button class="tab-btn" onclick="switchTab('compare',this)">Compare Countries</button>
+  </nav>
+
+  <!-- TAB 1 -->
+  <div class="tab-panel active" id="tab-profile">
+    <div class="profile-layout">
+      <div class="selector-panel">
+        <div class="panel-label">Select Country</div>
+        <select id="country-select" onchange="updateProfile()"></select>
+        <div class="rank-display" id="rank-display" style="display:none">
+          <div class="rank-label">Overall Rank</div>
+          <div class="rank-number" id="rank-num">—</div>
+          <div class="rank-country" id="rank-name">—</div>
+        </div>
+      </div>
+      <div>
+        <div class="chart-area">
+          <div class="chart-title">Dimension Radar</div>
+          <div class="radar-wrap"><canvas id="profile-radar"></canvas></div>
+        </div>
+        <div class="scores-grid" id="scores-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2 -->
+  <div class="tab-panel" id="tab-compare">
+    <div class="compare-layout">
+      <div class="compare-side left">
+        <div class="panel-label">Country A</div>
+        <select id="cmp-a" onchange="updateCompare()"></select>
+        <div class="country-name" id="cmp-a-name"></div>
+        <div id="cmp-a-scores"></div>
+      </div>
+
+      <div class="compare-center">
+        <div class="chart-title">Side-by-Side Radar</div>
+        <div class="compare-legend" id="compare-legend" style="display:none">
+          <div class="cmp-leg">
+            <span class="cmp-leg-dot" style="background:#7DD3FC"></span>
+            <span id="leg-a-name" style="color:var(--text)">Country A</span>
+          </div>
+          <div class="cmp-leg">
+            <span class="cmp-leg-dot" style="background:#FCA5A5"></span>
+            <span id="leg-b-name" style="color:var(--text)">Country B</span>
+          </div>
+        </div>
+        <div class="compare-radar-wrap"><canvas id="compare-radar" style="display:none"></canvas></div>
+        <div id="compare-placeholder" class="placeholder">
+          <span class="placeholder-icon">◎</span>
+          Select two countries to compare
+        </div>
+      </div>
+
+      <div class="compare-side right">
+        <div class="panel-label">Country B</div>
+        <select id="cmp-b" onchange="updateCompare()"></select>
+        <div class="country-name" id="cmp-b-name"></div>
+        <div id="cmp-b-scores"></div>
+      </div>
+    </div>
+  </div>
 </div>
+
 <script>
-const rows=[
+const DIMS = ['Talent','Infrastructure','Op. Env.','Research','Development','Gov. Strategy','Commercial','Scale','Intensity'];
+
+const DATA = [
 [100,"US",100,100,47,100,100,94,100,100,75],
 [74,"China",54,91,64,80,79,84,45,78,37],
 [49,"European Union",29,51,53,46,48,94,29,49,37],
@@ -135,7 +586,7 @@ const rows=[
 [8,"Iran",5,9,27,3,0,33,1,8,11],
 [8,"Dominican Rep.",1,9,46,1,0,13,2,7,9],
 [8,"Nepal",3,6,34,0,0,30,0,7,9],
-[8,"Côte d'Ivoire",3,4,37,0,0,25,2,7,9],
+[8,"Cote d'Ivoire",3,4,37,0,0,25,2,7,9],
 [7,"Tunisia",3,7,38,3,0,14,1,6,10],
 [7,"Rwanda",2,3,40,1,0,24,0,7,9],
 [7,"Bangladesh",6,5,32,1,0,19,1,7,8],
@@ -147,16 +598,193 @@ const rows=[
 [5,"Sierra Leone",2,1,29,0,0,15,0,5,6],
 ];
 
-function c(v){
-  if(v>=60) return `<span class="h">${v}</span>`;
-  if(v>=30) return `<span class="m">${v}</span>`;
-  return `<span class="l">${v}</span>`;
+const byName = {};
+DATA.forEach(row => { byName[row[1]] = { rank: row[0], name: row[1], scores: row.slice(2) }; });
+
+function cls(v) { return v >= 60 ? 'h' : v >= 30 ? 'm' : 'l'; }
+
+function populateSelect(el, placeholder) {
+  el.innerHTML = `<option value="">${placeholder}</option>`;
+  DATA.forEach(row => {
+    const o = document.createElement('option');
+    o.value = row[1];
+    o.textContent = row[1];
+    el.appendChild(o);
+  });
 }
 
-const tbody = document.getElementById('tbl');
-rows.forEach(([rank,country,...scores]) => {
-  tbody.innerHTML += `<tr><td>${rank}</td><td>${country}</td>${scores.map(s=>`<td>${c(s)}</td>`).join('')}</tr>`;
-});
+populateSelect(document.getElementById('country-select'), '— Choose a country —');
+populateSelect(document.getElementById('cmp-a'), '— Select —');
+populateSelect(document.getElementById('cmp-b'), '— Select —');
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+Chart.defaults.color = '#6b85a8';
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+
+const baseOpts = {
+  responsive: true,
+  maintainAspectRatio: true,
+  animation: { duration: 500, easing: 'easeInOutQuart' },
+  scales: {
+    r: {
+      min: 0, max: 100,
+      ticks: { stepSize: 25, font: { size: 9 }, color: '#2d4060', backdropColor: 'transparent' },
+      grid: { color: 'rgba(31,78,121,0.2)' },
+      angleLines: { color: 'rgba(31,78,121,0.25)' },
+      pointLabels: { font: { size: 10, weight: '500' }, color: '#7a9abf' }
+    }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#0f1c30',
+      borderColor: 'rgba(31,78,121,0.5)',
+      borderWidth: 1,
+      titleFont: { family: "'IBM Plex Mono', monospace", size: 11 },
+      bodyFont: { family: "'IBM Plex Mono', monospace", size: 12 },
+      padding: 10,
+    }
+  }
+};
+
+let profileChart = null;
+function updateProfile() {
+  const name = document.getElementById('country-select').value;
+  const grid = document.getElementById('scores-grid');
+  const rankDisplay = document.getElementById('rank-display');
+  if (!name) {
+    grid.innerHTML = '';
+    rankDisplay.style.display = 'none';
+    if (profileChart) { profileChart.destroy(); profileChart = null; }
+    return;
+  }
+  const d = byName[name];
+  rankDisplay.style.display = 'block';
+  document.getElementById('rank-num').textContent = '#' + d.rank;
+  document.getElementById('rank-name').textContent = d.name;
+
+  const canvas = document.getElementById('profile-radar');
+  if (profileChart) profileChart.destroy();
+  profileChart = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: DIMS,
+      datasets: [{
+        label: d.name,
+        data: d.scores,
+        backgroundColor: 'rgba(93,202,165,0.1)',
+        borderColor: 'rgba(93,202,165,0.85)',
+        borderWidth: 2,
+        pointBackgroundColor: d.scores.map(v => v >= 60 ? '#5DCAA5' : v >= 30 ? '#FAC775' : '#F09595'),
+        pointBorderColor: 'transparent',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      }]
+    },
+    options: baseOpts
+  });
+
+  grid.innerHTML = '';
+  DIMS.forEach((dim, i) => {
+    const v = d.scores[i];
+    const c = cls(v);
+    const card = document.createElement('div');
+    card.className = 'score-card';
+    card.style.animationDelay = (i * 0.05) + 's';
+    card.innerHTML = `<div class="score-dim">${dim}</div><div class="score-val ${c}">${v}</div><div class="score-bar-track"><div class="score-bar-fill ${c}" style="width:${v}%"></div></div>`;
+    grid.appendChild(card);
+  });
+}
+
+let compareChart = null;
+function updateCompare() {
+  const nameA = document.getElementById('cmp-a').value;
+  const nameB = document.getElementById('cmp-b').value;
+  renderSide('a', nameA, nameB);
+  renderSide('b', nameB, nameA);
+
+  const canvas = document.getElementById('compare-radar');
+  const placeholder = document.getElementById('compare-placeholder');
+  const legend = document.getElementById('compare-legend');
+
+  if (!nameA || !nameB) {
+    placeholder.style.display = 'flex';
+    canvas.style.display = 'none';
+    legend.style.display = 'none';
+    if (compareChart) { compareChart.destroy(); compareChart = null; }
+    return;
+  }
+
+  placeholder.style.display = 'none';
+  canvas.style.display = 'block';
+  legend.style.display = 'flex';
+
+  const dA = byName[nameA], dB = byName[nameB];
+  document.getElementById('leg-a-name').textContent = dA.name;
+  document.getElementById('leg-b-name').textContent = dB.name;
+
+  if (compareChart) compareChart.destroy();
+  compareChart = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: DIMS,
+      datasets: [
+        {
+          label: dA.name,
+          data: dA.scores,
+          backgroundColor: 'rgba(125,211,252,0.1)',
+          borderColor: 'rgba(125,211,252,0.85)',
+          borderWidth: 2,
+          pointBackgroundColor: '#7DD3FC',
+          pointBorderColor: 'transparent',
+          pointRadius: 4, pointHoverRadius: 6,
+        },
+        {
+          label: dB.name,
+          data: dB.scores,
+          backgroundColor: 'rgba(252,165,165,0.1)',
+          borderColor: 'rgba(252,165,165,0.85)',
+          borderWidth: 2,
+          pointBackgroundColor: '#FCA5A5',
+          pointBorderColor: 'transparent',
+          pointRadius: 4, pointHoverRadius: 6,
+        }
+      ]
+    },
+    options: baseOpts
+  });
+}
+
+function renderSide(side, name, otherName) {
+  const nameEl = document.getElementById(`cmp-${side}-name`);
+  const scoresEl = document.getElementById(`cmp-${side}-scores`);
+  if (!name) { nameEl.textContent = ''; scoresEl.innerHTML = ''; return; }
+  const d = byName[name];
+  const other = otherName ? byName[otherName] : null;
+  nameEl.textContent = d.name;
+  scoresEl.innerHTML = '';
+  DIMS.forEach((dim, i) => {
+    const v = d.scores[i];
+    const c = cls(v);
+    let diffHtml = '';
+    if (other) {
+      const diff = v - other.scores[i];
+      if (diff > 0) diffHtml = `<div class="cmp-diff diff-win">+${diff}</div>`;
+      else if (diff < 0) diffHtml = `<div class="cmp-diff diff-lose">${diff}</div>`;
+      else diffHtml = `<div class="cmp-diff diff-tie">—</div>`;
+    }
+    const row = document.createElement('div');
+    row.className = 'cmp-score-row';
+    row.innerHTML = `<div class="cmp-dim">${dim}</div><div><div class="cmp-val ${c}">${v}</div>${diffHtml}</div>`;
+    scoresEl.appendChild(row);
+  });
+}
 </script>
 </body>
 </html>
