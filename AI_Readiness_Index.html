@@ -426,6 +426,54 @@
   }
   .insight-flag { font-size: 20px; flex-shrink: 0; line-height: 1.4; }
   .insight strong { color: var(--text); }
+  .article-links {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .article-links-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .article-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-decoration: none;
+    max-width: 560px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .article-link:hover {
+    border-color: var(--green);
+    background: rgba(93,202,165,0.06);
+  }
+  .article-link-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: rgba(93,202,165,0.1);
+    border-radius: 4px;
+    padding: 3px 8px;
+    flex-shrink: 0;
+  }
+  .article-link-title {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+  }
   .summary-takeaway {
     font-size: 13px !important;
     color: var(--muted) !important;
@@ -507,6 +555,17 @@
         </div>
       </div>
       <p class="summary-takeaway">The AI race is no longer about who publishes the best paper. It's about who builds the most complete <em>ecosystem</em> — and increasingly, who controls the electricity, compute, and capital behind it.</p>
+      <div class="article-links">
+        <span class="article-links-label">Read the full analysis on Medium</span>
+        <a href="https://medium.com/@atabarezz/the-global-ai-index-1-a45f60e17470" target="_blank" rel="noopener" class="article-link">
+          <span class="article-link-num">Part 1</span>
+          <span class="article-link-title">Why the US Leads, China Chases, and Europe Risks Falling Behind →</span>
+        </a>
+        <a href="https://medium.com/@atabarezz/the-global-ai-index-2-259d0c936fe1" target="_blank" rel="noopener" class="article-link">
+          <span class="article-link-num">Part 2</span>
+          <span class="article-link-title">The Global AI Index — Deep Dive →</span>
+        </a>
+      </div>
     </div>
   </div>
 </div>
