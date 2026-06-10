@@ -671,9 +671,9 @@ function switchTab(id, btn) {
 
   let activePolygon = null;
 
-  polygonSeries.mapPolygons.template.on("click", function(ev) {
+  polygonSeries.mapPolygons.template.events.on("click", function(ev) {
     const polygon = ev.target;
-    const id = polygon.dataItem.get("id");
+    const id = polygon.dataItem && polygon.dataItem.get("id");
     const countryName = ISO_REV[id];
 
     if (!countryName || !byName[countryName]) return;
