@@ -6,23 +6,22 @@
 <title>Global AI Readiness Index</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
 <style>
   :root {
     --bg: #080e1a;
-    --bg2: #0d1628;
     --bg3: #111e35;
     --panel: #0f1c30;
     --border: rgba(93,202,165,0.12);
     --border2: rgba(31,78,121,0.4);
-    --navy: #1F4E79;
-    --navy-light: #2563a0;
     --green: #5DCAA5;
     --amber: #FAC775;
     --red: #F09595;
     --text: #e8eef7;
     --muted: #6b85a8;
     --dim: #3a5070;
-    --glow-green: rgba(93,202,165,0.25);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -155,11 +154,55 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* ── TAB 1 ── */
+  /* ── MAP ── */
+  .map-panel {
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 20px 24px 16px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .map-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .map-hint {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+  }
+  #map-div {
+    width: 100%;
+    height: 360px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .map-tooltip {
+    position: absolute;
+    background: #0a1628;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    pointer-events: none;
+    display: none;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .map-tooltip .tt-name { font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .map-tooltip .tt-rank { color: var(--muted); }
+
+  /* ── TAB 1 PROFILE ── */
   .profile-layout {
     display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 28px;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
     align-items: start;
   }
   .selector-panel {
@@ -221,11 +264,7 @@
     margin: 6px 0 4px;
     text-shadow: 0 0 40px rgba(93,202,165,0.4);
   }
-  .rank-country {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-  }
+  .rank-country { font-size: 15px; font-weight: 600; color: var(--text); }
   .chart-area {
     background: var(--panel);
     border: 1px solid var(--border2);
@@ -240,18 +279,8 @@
     color: var(--muted);
     margin-bottom: 16px;
   }
-  .radar-wrap {
-    width: 100%;
-    max-width: 460px;
-    margin: 0 auto;
-    aspect-ratio: 1;
-  }
-  .scores-grid {
-    margin-top: 24px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
+  .radar-wrap { width: 100%; max-width: 460px; margin: 0 auto; aspect-ratio: 1; }
+  .scores-grid { margin-top: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .score-card {
     background: var(--bg3);
     border: 1px solid var(--border);
@@ -270,44 +299,19 @@
     color: var(--muted);
     margin-bottom: 8px;
   }
-  .score-val {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 26px;
-    font-weight: 600;
-    line-height: 1;
-    margin-bottom: 8px;
-  }
+  .score-val { font-family: 'IBM Plex Mono', monospace; font-size: 26px; font-weight: 600; line-height: 1; margin-bottom: 8px; }
   .score-val.h { color: var(--green); }
   .score-val.m { color: var(--amber); }
   .score-val.l { color: var(--red); }
-  .score-bar-track {
-    height: 3px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .score-bar-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
-  }
+  .score-bar-track { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 2px; transition: width 0.7s cubic-bezier(0.4,0,0.2,1); }
   .score-bar-fill.h { background: var(--green); box-shadow: 0 0 6px var(--green); }
   .score-bar-fill.m { background: var(--amber); }
   .score-bar-fill.l { background: var(--red); }
 
   /* ── TAB 2 ── */
-  .compare-layout {
-    display: grid;
-    grid-template-columns: 260px 1fr 260px;
-    gap: 20px;
-    align-items: start;
-  }
-  .compare-side {
-    background: var(--panel);
-    border: 1px solid var(--border2);
-    border-radius: 12px;
-    padding: 20px;
-  }
+  .compare-layout { display: grid; grid-template-columns: 260px 1fr 260px; gap: 20px; align-items: start; }
+  .compare-side { background: var(--panel); border: 1px solid var(--border2); border-radius: 12px; padding: 20px; }
   .compare-side .country-name {
     font-family: 'Playfair Display', serif;
     font-size: 20px;
@@ -318,94 +322,38 @@
   }
   .compare-side.left .country-name { color: #7DD3FC; }
   .compare-side.right .country-name { color: #FCA5A5; }
-  .cmp-score-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 7px 0;
-    border-bottom: 1px solid var(--border);
-    gap: 8px;
-  }
+  .cmp-score-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); gap: 8px; }
   .cmp-score-row:last-child { border-bottom: none; }
-  .cmp-dim {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    flex: 1;
-  }
-  .cmp-val {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 15px;
-    font-weight: 600;
-    min-width: 28px;
-    text-align: right;
-  }
+  .cmp-dim { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); flex: 1; }
+  .cmp-val { font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 600; min-width: 28px; text-align: right; }
   .cmp-val.h { color: var(--green); }
   .cmp-val.m { color: var(--amber); }
   .cmp-val.l { color: var(--red); }
-  .cmp-diff {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px;
-    text-align: right;
-    letter-spacing: 0.04em;
-    opacity: 0.75;
-    min-width: 28px;
-  }
+  .cmp-diff { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-align: right; letter-spacing: 0.04em; opacity: 0.75; min-width: 28px; }
   .diff-win { color: var(--green); }
   .diff-lose { color: var(--red); }
   .diff-tie { color: var(--dim); }
-  .compare-center {
-    background: var(--panel);
-    border: 1px solid var(--border2);
-    border-radius: 12px;
-    padding: 28px;
-  }
+  .compare-center { background: var(--panel); border: 1px solid var(--border2); border-radius: 12px; padding: 28px; }
   .compare-center .chart-title { text-align: center; margin-bottom: 6px; }
-  .compare-legend {
-    display: flex;
-    justify-content: center;
-    gap: 24px;
-    margin-bottom: 16px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-  }
+  .compare-legend { display: flex; justify-content: center; gap: 24px; margin-bottom: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
   .cmp-leg { display: flex; align-items: center; gap: 7px; letter-spacing: 0.06em; }
   .cmp-leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .compare-radar-wrap {
-    width: 100%;
-    max-width: 420px;
-    margin: 0 auto;
-    aspect-ratio: 1;
-  }
-  .placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 280px;
-    color: var(--dim);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    border: 1px dashed var(--dim);
-    border-radius: 8px;
-    flex-direction: column;
-    gap: 10px;
-  }
+  .compare-radar-wrap { width: 100%; max-width: 420px; margin: 0 auto; aspect-ratio: 1; }
+  .placeholder { display: flex; align-items: center; justify-content: center; height: 280px; color: var(--dim); font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; border: 1px dashed var(--dim); border-radius: 8px; flex-direction: column; gap: 10px; }
   .placeholder-icon { font-size: 32px; opacity: 0.3; }
 
   @media (max-width: 1100px) {
     .profile-layout { grid-template-columns: 1fr; }
     .selector-panel { position: static; }
     .compare-layout { grid-template-columns: 1fr; }
+    #map-div { height: 260px; }
   }
   @media (max-width: 768px) {
     header { padding: 20px; }
     .legend-bar { padding: 12px 20px; flex-wrap: wrap; gap: 14px; }
     .tabs-wrapper { padding: 20px 20px 40px; }
     .scores-grid { grid-template-columns: repeat(2, 1fr); }
+    #map-div { height: 200px; }
   }
 </style>
 </head>
@@ -413,9 +361,7 @@
 
 <header>
   <div class="header-inner">
-    <div>
-      <div class="header-title">Global AI Readiness Index</div>
-    </div>
+    <div><div class="header-title">Global AI Readiness Index</div></div>
     <div class="header-meta">
       <span class="count">94</span>
       <span>Countries Assessed</span>
@@ -439,9 +385,20 @@
 
   <!-- TAB 1 -->
   <div class="tab-panel active" id="tab-profile">
+
+    <!-- MAP -->
+    <div class="map-panel">
+      <div class="map-header">
+        <div class="panel-label">World Map — Click a country to select</div>
+        <div class="map-hint">GREEN = HIGH · AMBER = MID · RED = LOW · GREY = NOT RANKED</div>
+      </div>
+      <div id="map-div"></div>
+    </div>
+
+    <!-- PROFILE GRID -->
     <div class="profile-layout">
       <div class="selector-panel">
-        <div class="panel-label">Select Country</div>
+        <div class="panel-label">Or Select from List</div>
         <select id="country-select" onchange="updateProfile()"></select>
         <div class="rank-display" id="rank-display" style="display:none">
           <div class="rank-label">Overall Rank</div>
@@ -468,18 +425,11 @@
         <div class="country-name" id="cmp-a-name"></div>
         <div id="cmp-a-scores"></div>
       </div>
-
       <div class="compare-center">
         <div class="chart-title">Side-by-Side Radar</div>
         <div class="compare-legend" id="compare-legend" style="display:none">
-          <div class="cmp-leg">
-            <span class="cmp-leg-dot" style="background:#7DD3FC"></span>
-            <span id="leg-a-name" style="color:var(--text)">Country A</span>
-          </div>
-          <div class="cmp-leg">
-            <span class="cmp-leg-dot" style="background:#FCA5A5"></span>
-            <span id="leg-b-name" style="color:var(--text)">Country B</span>
-          </div>
+          <div class="cmp-leg"><span class="cmp-leg-dot" style="background:#7DD3FC"></span><span id="leg-a-name" style="color:var(--text)">Country A</span></div>
+          <div class="cmp-leg"><span class="cmp-leg-dot" style="background:#FCA5A5"></span><span id="leg-b-name" style="color:var(--text)">Country B</span></div>
         </div>
         <div class="compare-radar-wrap"><canvas id="compare-radar" style="display:none"></canvas></div>
         <div id="compare-placeholder" class="placeholder">
@@ -487,7 +437,6 @@
           Select two countries to compare
         </div>
       </div>
-
       <div class="compare-side right">
         <div class="panel-label">Country B</div>
         <select id="cmp-b" onchange="updateCompare()"></select>
@@ -598,6 +547,33 @@ const DATA = [
 [5,"Sierra Leone",2,1,29,0,0,15,0,5,6],
 ];
 
+// ISO mapping for amCharts world map
+const ISO = {
+  "US":"US","China":"CN","Singapore":"SG","UK":"GB","South Korea":"KR",
+  "France":"FR","Israel":"IL","Canada":"CA","Germany":"DE","UAE":"AE",
+  "Japan":"JP","Switzerland":"CH","Netherlands":"NL","Saudi Arabia":"SA",
+  "Finland":"FI","Taiwan":"TW","India":"IN","Denmark":"DK","Sweden":"SE",
+  "Norway":"NO","Australia":"AU","Spain":"ES","Ireland":"IE","Malaysia":"MY",
+  "Brazil":"BR","Estonia":"EE","Luxembourg":"LU","Italy":"IT","Russia":"RU",
+  "Iceland":"IS","Greece":"GR","Austria":"AT","Belgium":"BE","Hungary":"HU",
+  "New Zealand":"NZ","Qatar":"QA","Poland":"PL","Slovenia":"SI","Lithuania":"LT",
+  "Vietnam":"VN","Portugal":"PT","Thailand":"TH","Czech Rep.":"CZ","Bahrain":"BH",
+  "Indonesia":"ID","Chile":"CL","Egypt":"EG","Philippines":"PH","Turkey":"TR",
+  "Romania":"RO","Jordan":"JO","Serbia":"RS","Colombia":"CO","South Africa":"ZA",
+  "Bulgaria":"BG","Uzbekistan":"UZ","Oman":"OM","Malta":"MT","Kuwait":"KW",
+  "Latvia":"LV","Ghana":"GH","Peru":"PE","Slovakia":"SK","Ukraine":"UA",
+  "Algeria":"DZ","Armenia":"AM","Uruguay":"UY","Morocco":"MA","Nigeria":"NG",
+  "Mauritius":"MU","Costa Rica":"CR","Pakistan":"PK","Tajikistan":"TJ",
+  "Kenya":"KE","Senegal":"SN","Mexico":"MX","Argentina":"AR","Azerbaijan":"AZ",
+  "Croatia":"HR","Sri Lanka":"LK","Iran":"IR","Dominican Rep.":"DO","Nepal":"NP",
+  "Cote d'Ivoire":"CI","Tunisia":"TN","Rwanda":"RW","Bangladesh":"BD",
+  "Benin":"BJ","Zambia":"ZM","Iraq":"IQ","Ethiopia":"ET","Cambodia":"KH",
+  "Sierra Leone":"SL"
+};
+// Reverse: ISO → country name
+const ISO_REV = {};
+Object.entries(ISO).forEach(([name, code]) => { ISO_REV[code] = name; });
+
 const byName = {};
 DATA.forEach(row => { byName[row[1]] = { rank: row[0], name: row[1], scores: row.slice(2) }; });
 
@@ -624,6 +600,138 @@ function switchTab(id, btn) {
   btn.classList.add('active');
 }
 
+// ── amCharts 5 World Map ──
+(function() {
+  const root = am5.Root.new("map-div");
+  root.setThemes([]);
+  root._logo.dispose();
+
+  const chart = root.container.children.push(
+    am5map.MapChart.new(root, {
+      projection: am5map.geoNaturalEarth1(),
+      panX: "translateX",
+      panY: "translateY",
+      wheelY: "zoom",
+      layout: root.horizontalLayout,
+    })
+  );
+
+  // Background
+  chart.chartContainer.set("background", am5.Rectangle.new(root, {
+    fill: am5.color(0x080e1a),
+    fillOpacity: 1
+  }));
+
+  // Build color map by ISO
+  const isoColor = {};
+  DATA.forEach(([rank, name, ...scores]) => {
+    const iso = ISO[name];
+    if (!iso) return;
+    const avg = scores.reduce((a,b) => a+b, 0) / scores.length;
+    let fill;
+    if (avg >= 50) fill = am5.color(0x5DCAA5);
+    else if (avg >= 25) fill = am5.color(0xFAC775);
+    else fill = am5.color(0xF09595);
+    isoColor[iso] = fill;
+  });
+
+  const polygonSeries = chart.series.push(
+    am5map.MapPolygonSeries.new(root, {
+      geoJSON: am5geodata_worldLow,
+      exclude: ["AQ"]
+    })
+  );
+
+  polygonSeries.mapPolygons.template.setAll({
+    tooltipText: "",
+    interactive: true,
+    strokeWidth: 0.4,
+    stroke: am5.color(0x1a2e4a),
+  });
+
+  polygonSeries.mapPolygons.template.states.create("hover", {
+    strokeWidth: 1.5,
+    stroke: am5.color(0x5DCAA5),
+  });
+
+  polygonSeries.mapPolygons.template.states.create("active", {
+    fill: am5.color(0x2563a0),
+    stroke: am5.color(0x5DCAA5),
+    strokeWidth: 2,
+  });
+
+  polygonSeries.events.on("datavalidated", () => {
+    polygonSeries.mapPolygons.each(polygon => {
+      const id = polygon.dataItem.get("id");
+      const fill = isoColor[id] || am5.color(0x172338);
+      polygon.set("fill", fill);
+      polygon.set("fillOpacity", isoColor[id] ? 0.75 : 0.4);
+    });
+  });
+
+  let activePolygon = null;
+
+  polygonSeries.mapPolygons.template.on("click", function(ev) {
+    const polygon = ev.target;
+    const id = polygon.dataItem.get("id");
+    const countryName = ISO_REV[id];
+
+    if (!countryName || !byName[countryName]) return;
+
+    if (activePolygon && activePolygon !== polygon) {
+      activePolygon.states.applyAnimate("default");
+      const prevId = activePolygon.dataItem.get("id");
+      const prevFill = isoColor[prevId] || am5.color(0x172338);
+      activePolygon.set("fill", prevFill);
+    }
+
+    polygon.states.applyAnimate("active");
+    activePolygon = polygon;
+
+    // Update the dropdown + profile
+    const sel = document.getElementById('country-select');
+    sel.value = countryName;
+    updateProfile();
+  });
+
+  // Custom tooltip on mouseover
+  polygonSeries.mapPolygons.template.events.on("pointerover", function(ev) {
+    const id = ev.target.dataItem.get("id");
+    const name = ISO_REV[id];
+    if (!name || !byName[name]) return;
+    const d = byName[name];
+    const avg = Math.round(d.scores.reduce((a,b) => a+b,0) / d.scores.length);
+    const band = avg >= 50 ? '🟢' : avg >= 25 ? '🟡' : '🔴';
+    showMapTip(name, `Rank #${d.rank} · Avg Score ${avg} ${band}`);
+  });
+
+  polygonSeries.mapPolygons.template.events.on("pointerout", hideMapTip);
+
+  // Tooltip DOM element
+  const mapPanel = document.querySelector('.map-panel');
+  const tip = document.createElement('div');
+  tip.className = 'map-tooltip';
+  tip.innerHTML = '<div class="tt-name"></div><div class="tt-rank"></div>';
+  mapPanel.appendChild(tip);
+
+  function showMapTip(name, sub) {
+    tip.querySelector('.tt-name').textContent = name;
+    tip.querySelector('.tt-rank').textContent = sub;
+    tip.style.display = 'block';
+  }
+  function hideMapTip() { tip.style.display = 'none'; }
+
+  document.getElementById('map-div').addEventListener('mousemove', function(e) {
+    const rect = mapPanel.getBoundingClientRect();
+    let x = e.clientX - rect.left + 14;
+    let y = e.clientY - rect.top - 10;
+    if (x + 200 > rect.width) x -= 220;
+    tip.style.left = x + 'px';
+    tip.style.top = y + 'px';
+  });
+})();
+
+// ── Chart.js ──
 Chart.defaults.color = '#6b85a8';
 Chart.defaults.font.family = "'IBM Plex Mono', monospace";
 
@@ -683,8 +791,7 @@ function updateProfile() {
         borderWidth: 2,
         pointBackgroundColor: d.scores.map(v => v >= 60 ? '#5DCAA5' : v >= 30 ? '#FAC775' : '#F09595'),
         pointBorderColor: 'transparent',
-        pointRadius: 4,
-        pointHoverRadius: 6,
+        pointRadius: 4, pointHoverRadius: 6,
       }]
     },
     options: baseOpts
