@@ -342,6 +342,99 @@
   .placeholder { display: flex; align-items: center; justify-content: center; height: 280px; color: var(--dim); font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; border: 1px dashed var(--dim); border-radius: 8px; flex-direction: column; gap: 10px; }
   .placeholder-icon { font-size: 32px; opacity: 0.3; }
 
+  /* ── SUMMARY BAND ── */
+  .summary-band {
+    border-bottom: 1px solid var(--border2);
+    background: linear-gradient(180deg, rgba(31,78,121,0.08) 0%, transparent 100%);
+    position: relative;
+    z-index: 5;
+  }
+  .summary-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 48px;
+  }
+  .summary-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+  .summary-body p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #a8bdd4;
+    max-width: 860px;
+    margin-bottom: 20px;
+  }
+  .summary-body strong { color: var(--text); font-weight: 600; }
+  .summary-body em { color: var(--green); font-style: normal; }
+  .summary-pillars {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .pillar {
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 12px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 180px;
+  }
+  .pillar-pct {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--green);
+    line-height: 1;
+  }
+  .pillar-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .pillar-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .summary-insights {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    max-width: 860px;
+  }
+  .insight {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #a8bdd4;
+  }
+  .insight-flag { font-size: 20px; flex-shrink: 0; line-height: 1.4; }
+  .insight strong { color: var(--text); }
+  .summary-takeaway {
+    font-size: 13px !important;
+    color: var(--muted) !important;
+    border-left: 2px solid var(--green);
+    padding-left: 14px !important;
+    margin-bottom: 0 !important;
+    font-style: italic;
+  }
+
   @media (max-width: 1100px) {
     .profile-layout { grid-template-columns: 1fr; }
     .selector-panel { position: static; }
@@ -375,6 +468,47 @@
   <div class="leg"><span class="leg-dot" style="background:var(--green)"></span> 60–100 HIGH</div>
   <div class="leg"><span class="leg-dot" style="background:var(--amber)"></span> 30–59 MID</div>
   <div class="leg"><span class="leg-dot" style="background:var(--red)"></span> 0–29 LOW</div>
+</div>
+
+<div class="summary-band">
+  <div class="summary-inner">
+    <div class="summary-headline">What is the Global AI Index?</div>
+    <div class="summary-body">
+      <p>The <strong>Global AI Index</strong> by The Observer ranks <strong>94 countries</strong> across <strong>108 indicators</strong> from 24 datasets — measuring not who built the best model, but who has the <em>capacity</em> to continuously build, deploy, finance, scale, and benefit from AI over the next decade.</p>
+      <div class="summary-pillars">
+        <div class="pillar">
+          <span class="pillar-pct">35%</span>
+          <span class="pillar-name">Implementation</span>
+          <span class="pillar-sub">Talent · Infrastructure · Operating Env.</span>
+        </div>
+        <div class="pillar">
+          <span class="pillar-pct">35%</span>
+          <span class="pillar-name">Innovation</span>
+          <span class="pillar-sub">Research · Development</span>
+        </div>
+        <div class="pillar">
+          <span class="pillar-pct">30%</span>
+          <span class="pillar-name">Investment</span>
+          <span class="pillar-sub">Gov. Strategy · Commercial Ecosystem</span>
+        </div>
+      </div>
+      <div class="summary-insights">
+        <div class="insight">
+          <span class="insight-flag">🇺🇸</span>
+          <div><strong>US leads</strong> — dominates talent, infrastructure, R&D, and commercial ecosystem simultaneously. The flywheel of capital → compute → talent keeps spinning.</div>
+        </div>
+        <div class="insight">
+          <span class="insight-flag">🇨🇳</span>
+          <div><strong>China is the only serious challenger</strong> — the only country competing across the full AI stack, backed by state-supported industrial acceleration at scale.</div>
+        </div>
+        <div class="insight">
+          <span class="insight-flag">🇪🇺</span>
+          <div><strong>Europe risks falling behind</strong> — world-class research and talent, but struggles to convert scientific excellence into frontier companies and commercial scale.</div>
+        </div>
+      </div>
+      <p class="summary-takeaway">The AI race is no longer about who publishes the best paper. It's about who builds the most complete <em>ecosystem</em> — and increasingly, who controls the electricity, compute, and capital behind it.</p>
+    </div>
+  </div>
 </div>
 
 <div class="tabs-wrapper">
